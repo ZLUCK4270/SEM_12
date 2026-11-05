@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Inteligente para Soporte al Cliente | Demo Interactiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #4ade80;
+      --warning: #facc15;
+      --danger: #f87171;
+      --accent: #818cf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #38bdf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    main {
+      flex: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* CHAT BOX */
+    .chat-messages {
+      flex: 1;
+      height: 440px;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: #0b1324;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 0.9rem 1.1rem;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .intent-pill {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--primary);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .action-pill {
+      background: rgba(129, 140, 248, 0.2);
+      color: var(--accent);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .action-button {
+      margin-top: 0.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .action-button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .suggestions-row {
+      padding: 0.75rem 1.25rem;
+      background: #131d33;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+    }
+
+    .suggestion-chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #93c5fd;
+      font-size: 0.78rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .suggestion-chip:hover {
+      background: #2563eb;
+      color: white;
+      border-color: #3b82f6;
+    }
+
+    .chat-input-bar {
+      padding: 1rem 1.25rem;
+      background: var(--card);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+    }
+
+    .send-btn {
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      padding: 0 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .send-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* RIGHT COLUMN: INSPECTOR & STATS */
+    .inspector-content {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      height: 100%;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .metric-card {
+      background: #0b1324;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metric-lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 0.2rem;
+    }
+
+    .json-preview {
+      background: #070d19;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #7dd3fc;
+      overflow-x: auto;
+      max-height: 280px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 1.25rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.75rem 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    .order-tag {
+      background: rgba(250, 204, 21, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🤖</div>
+      <div>
+        <h1>E-Commerce AI Support Suite</h1>
+        <span>API REST con Procesamiento de Lenguaje Natural (NLP) y JWT</span>
+      </div>
+    </div>
+    <div class="badge-status">
+      <div class="pulse"></div>
+      <span>API Online en :3000/api</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- COLUMNA IZQUIERDA: CHAT EN VIVO DE ATENCIÓN AL CLIENTE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>💬</span> Asistente Virtual Automatizado
+        </div>
+        <span class="order-tag">Órdenes demo: #PED-1001 | #PED-1002 | #PED-1003</span>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="message assistant">
+          ¡Hola! Soy el asistente virtual con Inteligencia Artificial de la tienda.
+          ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre el estado de tu pedido, solicitar una devolución o reportar fallas en tu compra.
+          <div class="message-meta">
+            <span class="intent-pill">system.welcome</span>
+            <span>Respuesta en 12ms</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUGERENCIAS RÁPIDAS BASADAS EN LOS CASOS DEL ENUNCIADO -->
+      <div class="suggestions-row">
+        <div class="suggestion-chip" onclick="sendQuickQuery('¿Dónde está mi pedido #PED-1001?')">
+          📦 "¿Dónde está mi pedido #PED-1001?"
+        </div>
+        <div class="suggestion-chip" onclick="sendQuickQuery('Quiero devolver un producto de mi orden #PED-1002')">
+          🔄 "Quiero devolver un producto"
+        </div>
+        <div class="suggestion-chip" onclick="sendQuickQuery('No funciona mi compra, no enciende')">
+          ⚠️ "No funciona mi compra"
+        </div>
+        <div class="suggestion-chip" onclick="sendQuickQuery('¿Dónde está mi pedido?')">
+          ❓ "¿Dónde está mi pedido?" (sin ID)
+        </div>
+      </div>
+
+      <div class="chat-input-bar">
+        <input 
+          type="text" 
+          id="queryInput" 
+          class="chat-input" 
+          placeholder="Escribe tu consulta aquí..." 
+          onkeydown="if(event.key === 'Enter') handleSendQuery()"
+        >
+        <button class="send-btn" id="sendBtn" onclick="handleSendQuery()">Enviar</button>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: INSPECTOR DE INTELIGENCIA ARTIFICIAL, PAYLOAD Y MÉTRICAS -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-inspector', this)">🧠 Análisis IA / NLP</button>
+        <button class="tab-btn" onclick="switchTab('tab-json', this)">⚡ JSON Payload</button>
+        <button class="tab-btn" onclick="switchTab('tab-auth', this)">🔐 JWT & Seguridad</button>
+      </div>
+
+      <div class="inspector-content">
+        <!-- PESTAÑA 1: ANÁLISIS DE IA -->
+        <div id="tab-inspector" class="tab-pane active">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-val" id="statIntention">--</div>
+              <div class="metric-lbl">Intención Detectada</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-val" id="statConfidence">0%</div>
+              <div class="metric-lbl">Confianza IA</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-val" id="statSentiment">Neutral</div>
+              <div class="metric-lbl">Sentimiento</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem;">
+            <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              🏷️ Entidades Extraídas (NER)
+            </h4>
+            <div id="entitiesDisplay" style="background: #0b1324; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.85rem;">
+              Ninguna consulta procesada aún.
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              ⚙️ Acción Sugerida por el Sistema
+            </h4>
+            <div id="actionDisplay" style="background: #0b1324; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.85rem;">
+              Esperando interacción...
+            </div>
+          </div>
+        </div>
+
+        <!-- PESTAÑA 2: RESPUESTA CRUDA DE LA API REST -->
+        <div id="tab-json" class="tab-pane">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Endpoint: <code style="color: var(--primary);">POST /api/support/query</code>
+          </p>
+          <pre class="json-preview" id="jsonPreview">// La respuesta JSON estructurada de la API REST se visualizará aquí en tiempo real...</pre>
+        </div>
+
+        <!-- PESTAÑA 3: TOKEN JWT -->
+        <div id="tab-auth" class="tab-pane">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Autenticación basada en JSON Web Token (JWT). Puedes iniciar sesión como cliente demo para asociar automáticamente tus pedidos:
+          </p>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="action-button" onclick="loginDemoCustomer()">
+              🔑 Iniciar Sesión como Cliente (carlos@ejemplo.com)
+            </button>
+            <button class="action-button" style="background: #475569;" onclick="clearAuth()">
+              Cerrar Sesión
+            </button>
+          </div>
+          <div id="authStatus" style="font-size: 0.8rem; color: var(--text-muted); word-break: break-all; background: #0b1324; padding: 0.75rem; border-radius: 8px;">
+            Modo anónimo / Sin token JWT activo
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let authToken = localStorage.getItem('support_jwt_token') || null;
+
+    if (authToken) {
+      document.getElementById('authStatus').innerHTML = `✅ <strong>Autenticado con JWT:</strong><br><small>${authToken.slice(0, 45)}...</small>`;
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function sendQuickQuery(text) {
+      document.getElementById('queryInput').value = text;
+      handleSendQuery();
+    }
+
+    async function loginDemoCustomer() {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'carlos@ejemplo.com', password: 'password123' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          authToken = data.data.token;
+          localStorage.setItem('support_jwt_token', authToken);
+          document.getElementById('authStatus').innerHTML = `✅ <strong>Autenticado como:</strong> ${data.data.user.name} (${data.data.user.email})<br><small style="color: #38bdf8;">Token: ${authToken.slice(0, 40)}...</small>`;
+          alert('¡Inicio de sesión exitoso! Tus consultas ahora estarán asociadas a tu cuenta y órdenes.');
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Error conectando a la API: ' + err.message);
+      }
+    }
+
+    function clearAuth() {
+      authToken = null;
+      localStorage.removeItem('support_jwt_token');
+      document.getElementById('authStatus').innerText = 'Modo anónimo / Sin token JWT activo';
+    }
+
+    async function handleSendQuery() {
+      const input = document.getElementById('queryInput');
+      const query = input.value.trim();
+      if (!query) return;
+
+      input.value = '';
+      addMessage(query, 'user');
+
+      // Mostrar loader en el chat
+      const loadingId = 'loading-' + Date.now();
+      addLoadingIndicator(loadingId);
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const res = await fetch('/api/support/query', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ query })
+        });
+
+        const data = await res.json();
+        removeLoadingIndicator(loadingId);
+
+        if (data.success) {
+          const info = data.data;
+          addAssistantMessage(info.automatedResponse, info.nlpInterpretation, info.suggestedAction, info.ticket);
+          updateInspector(info);
+        } else {
+          addMessage('Ocurrió un error al procesar tu solicitud: ' + (data.error || 'Desconocido'), 'assistant');
+        }
+      } catch (err) {
+        removeLoadingIndicator(loadingId);
+        addMessage('No se pudo conectar con el servidor: ' + err.message, 'assistant');
+      }
+    }
+
+    function addMessage(text, role) {
+      const chat = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      div.innerText = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addLoadingIndicator(id) {
+      const chat = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'message assistant';
+      div.innerHTML = '<em>Analizando con IA...</em>';
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function removeLoadingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function addAssistantMessage(text, nlp, action, ticket) {
+      const chat = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'message assistant';
+
+      let actionHtml = '';
+      if (action && action.label) {
+        actionHtml = `<br><button class="action-button" onclick="alert('Acción ejecutada: ${action.label}')">✨ ${action.label}</button>`;
+      }
+
+      div.innerHTML = `
+        ${text}
+        ${actionHtml}
+        <div class="message-meta">
+          <span class="intent-pill">${nlp.intent}</span>
+          <span class="action-pill">${(nlp.confidence * 100).toFixed(0)}% confianza</span>
+          <span>Ticket: ${ticket.ticketNumber}</span>
+        </div>
+      `;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function updateInspector(info) {
+      document.getElementById('statIntention').innerText = info.nlpInterpretation.intent;
+      document.getElementById('statConfidence').innerText = (info.nlpInterpretation.confidence * 100).toFixed(0) + '%';
+      
+      const sent = info.nlpInterpretation.sentiment;
+      document.getElementById('statSentiment').innerText = sent ? sent.label : 'neutral';
+
+      // Entidades
+      const ent = info.nlpInterpretation.entitiesExtracted;
+      document.getElementById('entitiesDisplay').innerHTML = `
+        <strong>Pedido Detectado:</strong> <span style="color: #38bdf8;">${ent.orderNumber || 'Ninguno'}</span><br>
+        <strong>Email Detectado:</strong> <span>${ent.email || 'Ninguno'}</span><br>
+        <strong>Palabras Clave:</strong> <span>${ent.detectedKeywords && ent.detectedKeywords.length ? ent.detectedKeywords.join(', ') : 'Ninguna'}</span>
+      `;
+
+      // Acción
+      const act = info.suggestedAction;
+      document.getElementById('actionDisplay').innerHTML = `
+        <strong>Tipo:</strong> <span style="color: #818cf8;">${act.type}</span><br>
+        <strong>Etiqueta:</strong> <span>${act.label}</span>
+      `;
+
+      // JSON preview
+      document.getElementById('jsonPreview').textContent = JSON.stringify(info, null, 2);
+    }
+  </script>
+</body>
+</html>
+
